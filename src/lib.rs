@@ -51,3 +51,24 @@ where
     .join()
     .unwrap();
 }
+
+/// Dynamically load the given libc function.
+///
+/// Used during libc patching, to fall back to the real implementations when simulation is
+/// disabled.
+macro_rules! dlsym {
+    ( $name:ident($( $arg:ty ),*) -> $ret:ty ) => {{
+        use std::ffi::CString;
+        use std::sync::OnceLock;
+
+        static SYM: OnceLock<unsafe extern "C" fn($( $arg ),*) -> $ret> = OnceLock::new();
+
+        SYM.get_or_init(|| unsafe {
+            let name = CString::new(stringify!($name)).unwrap();
+            let ptr = libc::dlsym(libc::RTLD_NEXT, name.as_ptr().cast());
+            assert!(!ptr.is_null());
+            std::mem::transmute(ptr)
+        })
+    }};
+}
+pub(crate) use dlsym;

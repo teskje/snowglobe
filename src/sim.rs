@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use turmoil::ToIpAddr;
 
-use crate::context;
+use crate::{Result, context};
 
 pub struct Sim(turmoil::Sim<'static>);
 
@@ -20,19 +20,19 @@ impl Sim {
     pub fn host<F, Fut>(&mut self, addr: impl ToIpAddr, host: F)
     where
         F: Fn() -> Fut + 'static,
-        Fut: Future<Output = turmoil::Result> + 'static,
+        Fut: Future<Output = Result> + 'static,
     {
         self.0.host(addr, host)
     }
 
     pub fn client<Fut>(&mut self, addr: impl ToIpAddr, client: Fut)
     where
-        Fut: Future<Output = turmoil::Result> + 'static,
+        Fut: Future<Output = Result> + 'static,
     {
         self.0.client(addr, client)
     }
 
-    pub fn step(&mut self) -> turmoil::Result<bool> {
+    pub fn step(&mut self) -> Result<bool> {
         let res = self.0.step();
 
         let duration = self.0.since_epoch();
@@ -41,7 +41,7 @@ impl Sim {
         res
     }
 
-    pub fn run(&mut self) -> turmoil::Result {
+    pub fn run(&mut self) -> Result {
         let mut finished = false;
         while !finished {
             finished = self.step()?;

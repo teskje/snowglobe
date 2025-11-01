@@ -14,6 +14,7 @@ compile_error!("This crate requires `--cfg tokio_unstable`");
 compile_error!("This crate requires `--cfg getrandom_backend=\"linux_getrandom\"");
 
 mod context;
+mod error;
 mod patch;
 mod sim;
 
@@ -22,13 +23,15 @@ use std::time::{Duration, UNIX_EPOCH};
 
 use crate::sim::Sim;
 
+pub use crate::error::{Error, Result};
+
 #[derive(Clone, Debug, Default)]
 pub struct Config {
     pub rng_seed: u64,
     pub start_time: Duration,
 }
 
-pub fn simulation<F>(cfg: Config, program: F)
+pub fn simulation<F>(cfg: Config, program: F) -> Result
 where
     F: FnOnce(Sim) + Send + 'static,
 {
@@ -52,5 +55,5 @@ where
         program(sim.into());
     })
     .join()
-    .unwrap();
+    .map_err(error::downcast)
 }

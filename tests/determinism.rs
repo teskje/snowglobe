@@ -1,3 +1,5 @@
+//! Tests that validate that code running in a simulation is deterministic.
+
 use std::collections::HashSet;
 use std::fmt;
 use std::time::Duration;
@@ -28,7 +30,8 @@ where
                 Ok(())
             });
             sim.run().unwrap();
-        });
+        })
+        .unwrap();
 
         let result = rx.blocking_recv().unwrap();
         if let Some(expected) = &expected {

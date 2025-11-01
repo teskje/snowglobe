@@ -1,8 +1,6 @@
-use std::ffi::c_void;
-
-use libc::{c_int, c_uint, size_t, ssize_t};
-use rand::rngs::SmallRng;
+use libc::{c_int, c_uint, c_void, size_t, ssize_t};
 use rand::Rng;
+use rand::rngs::SmallRng;
 
 use super::patch;
 

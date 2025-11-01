@@ -1,4 +1,5 @@
 mod rng;
+mod thread;
 mod time;
 
 /// Dynamically load the given libc function.

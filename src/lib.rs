@@ -1,7 +1,14 @@
 // Turmoil can only manually seed tokio runtimes under `tokio_unstable`, so we require this cfg to
 // avoid accidental loss of determinism.
-#[cfg(not(tokio_unstable))]
-compile_error!("snowglobe requires `--cfg tokio_unstable`");
+#[cfg(all(not(tokio_unstable), not(doctest)))]
+compile_error!("This crate requires `--cfg tokio_unstable`");
+
+#[cfg(all(
+    target_os = "linux",
+    not(getrandom_backend = "linux_getrandom"),
+    not(doctest),
+))]
+compile_error!("This crate requires `--cfg getrandom_backend=\"linux_getrandom\"");
 
 mod rng;
 mod sim;

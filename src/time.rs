@@ -4,7 +4,7 @@ use std::time::Duration;
 use libc::{c_int, clockid_t, timespec};
 
 thread_local! {
-    static TIME: Cell<Option<Duration>> = Cell::new(None);
+    static TIME: Cell<Option<Duration>> = const { Cell::new(None) };
 }
 
 pub(crate) fn enter_simulation(start_time: Duration) {

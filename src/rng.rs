@@ -6,7 +6,7 @@ use rand::rngs::SmallRng;
 use rand::{Rng, SeedableRng};
 
 thread_local! {
-    static RNG: RefCell<Option<SmallRng>> = RefCell::new(None);
+    static RNG: RefCell<Option<SmallRng>> = const { RefCell::new(None) };
 }
 
 pub(crate) fn enter_simulation(seed: u64) {

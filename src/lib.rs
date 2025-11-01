@@ -1,11 +1,12 @@
 // Turmoil can only manually seed tokio runtimes under `tokio_unstable`, so we require this cfg to
 // avoid accidental loss of determinism.
-#[cfg(all(not(tokio_unstable), not(doctest)))]
+#[cfg(all(not(tokio_unstable), not(doc), not(doctest)))]
 compile_error!("This crate requires `--cfg tokio_unstable`");
 
 #[cfg(all(
     target_os = "linux",
     not(getrandom_backend = "linux_getrandom"),
+    not(doc),
     not(doctest),
 ))]
 compile_error!("This crate requires `--cfg getrandom_backend=\"linux_getrandom\"");

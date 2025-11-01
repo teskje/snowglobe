@@ -5,8 +5,8 @@ edition = "2024"
 
 [dependencies]
 libc = "0.2"
-rand = "0.8"
-turmoil = { git = "https://github.com/teskje/turmoil.git", branch = "tokio-rng-seed" }
+rand = "0.9"
+turmoil = { git = "https://github.com/teskje/turmoil.git" }
 
 [dev-dependencies]
 tokio = "1"

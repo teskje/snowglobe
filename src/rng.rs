@@ -21,7 +21,7 @@ pub(crate) fn exit_simulation() {
 
 unsafe fn fill_raw(rng: &mut SmallRng, buf: *mut u8, len: usize) {
     for i in 0..len {
-        let b = rng.r#gen();
+        let b = rng.random();
         unsafe { buf.add(i).write(b) };
     }
 }

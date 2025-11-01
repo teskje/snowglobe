@@ -10,9 +10,6 @@ mod time;
 use std::thread;
 use std::time::{Duration, UNIX_EPOCH};
 
-use rand::rngs::SmallRng;
-use rand::SeedableRng;
-
 use crate::sim::Sim;
 
 #[derive(Clone, Debug, Default)]
@@ -32,12 +29,12 @@ where
         rng::enter_simulation(cfg.rng_seed);
         time::enter_simulation(cfg.start_time);
 
-        let rng = Box::new(SmallRng::from_entropy());
         let sim = turmoil::Builder::new()
             .enable_random_order()
             .epoch(UNIX_EPOCH.checked_add(cfg.start_time).unwrap())
             .tick_duration(Duration::from_millis(1))
-            .build_with_rng(rng);
+            .rng_seed(cfg.rng_seed)
+            .build();
 
         program(sim.into());
 

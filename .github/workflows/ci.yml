@@ -16,8 +16,15 @@ jobs:
     continue-on-error: ${{ matrix.rust == 'nightly' }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        rust: [stable, nightly]
+        include:
+          - os: ubuntu-latest
+            rust: 1.85.1
+          - os: ubuntu-latest
+            rust: stable
+          - os: ubuntu-latest
+            rust: nightly
+          - os: macos-latest
+            rust: stable
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master

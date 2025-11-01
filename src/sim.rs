@@ -2,6 +2,8 @@ use std::time::Duration;
 
 use turmoil::ToIpAddr;
 
+use crate::context;
+
 pub struct Sim(turmoil::Sim<'static>);
 
 impl From<turmoil::Sim<'static>> for Sim {
@@ -34,7 +36,7 @@ impl Sim {
         let res = self.0.step();
 
         let duration = self.0.since_epoch();
-        crate::time::advance(duration);
+        context::advance_time(duration);
 
         res
     }

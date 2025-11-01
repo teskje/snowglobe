@@ -1,0 +1,15 @@
+[package]
+name = "snowglobe"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+libc = "0.2"
+rand = "0.8"
+turmoil = { git = "https://github.com/teskje/turmoil.git", branch = "tokio-rng-seed" }
+
+[dev-dependencies]
+tokio = "1"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tokio_unstable)'] }

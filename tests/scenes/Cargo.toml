@@ -1,0 +1,11 @@
+[package]
+name = "test-scenes"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85.1"
+
+[dependencies]
+pico-args = "0.5"
+rand = "0.9"
+snowglobe = { path = "../.." }
+tokio = "1"

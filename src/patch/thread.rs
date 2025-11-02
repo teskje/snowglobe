@@ -5,10 +5,10 @@ use super::patch;
 // https://man7.org/linux/man-pages/man3/pthread_create.3.html
 patch! {
     fn pthread_create(
-        native: *mut pthread_t,
-        attr: *const pthread_attr_t,
-        f: extern "C" fn(*mut c_void) -> *mut c_void,
-        value: *mut c_void,
+        _native: *mut pthread_t,
+        _attr: *const pthread_attr_t,
+        _f: extern "C" fn(*mut c_void) -> *mut c_void,
+        _value: *mut c_void,
     ) -> c_int
     |_ctx| {
         libc::EPERM

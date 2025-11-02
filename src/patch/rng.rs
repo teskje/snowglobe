@@ -13,7 +13,7 @@ unsafe fn fill_raw(rng: &mut SmallRng, buf: *mut u8, len: usize) {
 
 // https://man7.org/linux/man-pages/man2/getrandom.2.html
 patch! {
-    fn getrandom(buf: *mut c_void, buflen: size_t, flags: c_uint) -> ssize_t
+    fn getrandom(buf: *mut c_void, buflen: size_t, _flags: c_uint) -> ssize_t
     |ctx| {
         unsafe { fill_raw(&mut ctx.rng, buf.cast(), buflen) };
         buflen as ssize_t

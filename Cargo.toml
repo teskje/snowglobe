@@ -9,9 +9,6 @@ libc = "0.2"
 rand = "0.9"
 turmoil = { git = "https://github.com/teskje/turmoil.git" }
 
-[dev-dependencies]
-tokio = "1"
-
 [lints.rust.unexpected_cfgs]
 level = "warn"
 check-cfg = [

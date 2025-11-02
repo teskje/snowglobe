@@ -1,25 +1,23 @@
 //! Tests that validate that code running in a simulation cannot break out.
 
-#[test]
-#[should_panic(expected = "Operation not permitted")]
-fn panic_on_thread_spawn() {
-    let cfg = snowglobe::Config::default();
-    snowglobe::simulation(cfg, |_sim| {
-        std::thread::spawn(|| {}).join().unwrap();
-    })
-    .unwrap();
+mod common;
+
+/// Run a test scene, asserting that it fails with the expected error.
+fn test_containment(scene: &str, error: &str) {
+    let output = common::run_test_scene(scene);
+    assert!(!output.status.success(), "{output}");
+    assert!(output.stderr.contains(error), "{output}");
 }
 
 #[test]
-#[should_panic(expected = "a spawned task panicked")]
-fn panic_on_tokio_spawn_blocking() {
-    let cfg = snowglobe::Config::default();
-    snowglobe::simulation(cfg, |mut sim| {
-        sim.client("test", async {
-            tokio::task::spawn_blocking(|| {}).await?;
-            Ok(())
-        });
-        sim.run().unwrap();
-    })
-    .unwrap();
+fn thread_spawn() {
+    test_containment("containment::thread_spawn", "Operation not permitted");
+}
+
+#[test]
+fn tokio_spawn_blocking() {
+    test_containment(
+        "containment::tokio_spawn_blocking",
+        "Operation not permitted",
+    );
 }

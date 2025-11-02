@@ -9,15 +9,15 @@ fn test_containment(scene: &str, error: &str) {
     assert!(output.stderr.contains(error), "{output}");
 }
 
-#[test]
-fn thread_spawn() {
-    test_containment("containment::thread_spawn", "Operation not permitted");
+macro_rules! test {
+    ($name:ident, $error:literal) => {
+        #[test]
+        fn $name() {
+            let scene = concat!("containment::", stringify!($name));
+            test_containment(scene, $error);
+        }
+    };
 }
 
-#[test]
-fn tokio_spawn_blocking() {
-    test_containment(
-        "containment::tokio_spawn_blocking",
-        "Operation not permitted",
-    );
-}
+test!(thread_spawn, "Operation not permitted");
+test!(tokio_spawn_blocking, "Operation not permitted");

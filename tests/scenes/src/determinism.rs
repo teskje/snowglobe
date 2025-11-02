@@ -61,3 +61,7 @@ pub fn std_time(mut sim: snowglobe::Sim) {
     });
     sim.run().unwrap();
 }
+
+pub fn uuid(_sim: snowglobe::Sim) {
+    print!("{}", uuid::Uuid::now_v7());
+}

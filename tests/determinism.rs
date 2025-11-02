@@ -20,27 +20,19 @@ fn test_determinism(scene: &str) {
     }
 }
 
-#[test]
-fn random_numbers() {
-    test_determinism("determinism::random_numbers");
+macro_rules! test {
+    ($name:ident) => {
+        #[test]
+        fn $name() {
+            let scene = concat!("determinism::", stringify!($name));
+            test_determinism(scene);
+        }
+    };
 }
 
-#[test]
-fn select_branch() {
-    test_determinism("determinism::select_branch");
-}
-
-#[test]
-fn hashset_order() {
-    test_determinism("determinism::hashset_order");
-}
-
-#[test]
-fn tokio_time() {
-    test_determinism("determinism::tokio_time");
-}
-
-#[test]
-fn std_time() {
-    test_determinism("determinism::std_time");
-}
+test!(random_numbers);
+test!(select_branch);
+test!(hashset_order);
+test!(tokio_time);
+test!(std_time);
+test!(uuid);

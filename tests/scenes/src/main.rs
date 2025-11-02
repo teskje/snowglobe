@@ -42,6 +42,7 @@ fn main() {
         "determinism::hashset_order" => determinism::hashset_order(sim),
         "determinism::tokio_time" => determinism::tokio_time(sim),
         "determinism::std_time" => determinism::std_time(sim),
+        "determinism::uuid" => determinism::uuid(sim),
         "containment::thread_spawn" => containment::thread_spawn(sim),
         "containment::tokio_spawn_blocking" => containment::tokio_spawn_blocking(sim),
         name => panic!("unknown scene: {name}"),

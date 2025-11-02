@@ -1,3 +1,5 @@
+[workspace]
+
 [package]
 name = "test-scenes"
 version = "0.1.0"

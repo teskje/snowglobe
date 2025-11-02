@@ -1,0 +1,13 @@
+[package]
+name = "snowglobe"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+libc = "0.2"
+rand = "0.9"
+turmoil = { git = "https://github.com/teskje/turmoil.git" }
+
+[lints]
+workspace = true

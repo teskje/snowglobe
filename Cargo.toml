@@ -1,17 +1,14 @@
-[package]
-name = "snowglobe"
+[workspace]
+members = ["crates/*"]
+resolver = "3"
+
+[workspace.package]
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.85.1"
 
-[dependencies]
-libc = "0.2"
-rand = "0.9"
-turmoil = { git = "https://github.com/teskje/turmoil.git" }
-
-[lints.rust.unexpected_cfgs]
+[workspace.lints.rust.unexpected_cfgs]
 level = "warn"
 check-cfg = [
-    'cfg(tokio_unstable)',
     'cfg(getrandom_backend, values("linux_getrandom"))',
 ]

@@ -2,7 +2,7 @@
 
 use std::fmt;
 use std::path::PathBuf;
-use std::process::{Command, ExitStatus, Stdio};
+use std::process::{Command, ExitStatus};
 use std::sync::Mutex;
 
 #[derive(Debug)]
@@ -59,8 +59,6 @@ fn build_test_scenes() -> PathBuf {
         let status = Command::new("cargo")
             .arg("build")
             .current_dir(crate_dir)
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
             .status()
             .unwrap();
         assert!(status.success());

@@ -5,9 +5,16 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+argh = { version = "0.1", optional = true }
 libc = "0.2"
+linkme = "0.3"
 rand = "0.9"
+snowglobe-macros = { path = "../snowglobe-macros", optional = true }
 turmoil = { git = "https://github.com/teskje/turmoil.git" }
 
 [lints]
 workspace = true
+
+[features]
+default = ["cli"]
+cli = ["dep:argh", "dep:snowglobe-macros"]

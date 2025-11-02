@@ -34,8 +34,8 @@ pub fn run_test_scene(scene: &str) -> SceneOutput {
     let bin = build_test_scenes();
 
     let output = Command::new(bin)
-        .arg(scene)
-        .args(["--seed", "0"])
+        .args(["run", scene])
+        .args(["--rng-seed", "0"])
         .args(["--start-time", "0"])
         .output()
         .unwrap();

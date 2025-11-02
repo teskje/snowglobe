@@ -13,20 +13,13 @@ mod error;
 mod patch;
 mod sim;
 
-use std::time::{Duration, UNIX_EPOCH};
+#[cfg(feature = "cli")]
+pub mod cli;
 
-use rand::SeedableRng;
-use rand::rngs::SmallRng;
+use std::time::{Duration, UNIX_EPOCH};
 
 pub use crate::error::{Error, Result};
 pub use crate::sim::Sim;
-
-pub fn seed(rng_seed: u64, start_time: Duration) {
-    context::with(|ctx| {
-        ctx.rng = SmallRng::seed_from_u64(rng_seed);
-        ctx.time = start_time;
-    })
-}
 
 #[derive(Clone, Debug, Default)]
 pub struct Config {

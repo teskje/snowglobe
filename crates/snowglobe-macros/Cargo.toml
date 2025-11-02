@@ -1,0 +1,15 @@
+[package]
+name = "snowglobe-macros"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1"
+syn = "2"
+
+[lints]
+workspace = true

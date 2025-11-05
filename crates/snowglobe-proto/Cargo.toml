@@ -1,0 +1,12 @@
+[package]
+name = "snowglobe-proto"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+serde = "1"
+serde_json = "1"
+
+[lints]
+workspace = true

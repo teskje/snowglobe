@@ -1,0 +1,15 @@
+[package]
+name = "cargo-snowglobe"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow = "1"
+cargo_metadata = "0.23"
+clap = { version = "4", features = ["derive"] }
+rand = "0.9"
+snowglobe-proto.path = "../snowglobe-proto"
+
+[lints]
+workspace = true

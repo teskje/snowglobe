@@ -10,6 +10,7 @@ libc = "0.2"
 linkme = "0.3"
 rand = "0.9"
 snowglobe-macros = { path = "../snowglobe-macros", optional = true }
+snowglobe-proto = { path = "../snowglobe-proto", optional = true }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"], optional = true }
 turmoil = { git = "https://github.com/teskje/turmoil.git" }
@@ -24,4 +25,9 @@ workspace = true
 
 [features]
 default = ["cli"]
-cli = ["dep:argh", "dep:snowglobe-macros", "dep:tracing-subscriber"]
+cli = [
+    "dep:argh",
+    "dep:snowglobe-macros",
+    "dep:snowglobe-proto",
+    "dep:tracing-subscriber",
+]

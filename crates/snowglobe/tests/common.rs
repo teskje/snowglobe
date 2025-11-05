@@ -1,9 +1,7 @@
 #![allow(dead_code)]
 
 use std::fmt;
-use std::path::PathBuf;
 use std::process::{Command, ExitStatus};
-use std::sync::Mutex;
 
 #[derive(Debug)]
 pub struct SceneOutput {
@@ -31,9 +29,9 @@ impl fmt::Display for SceneOutput {
 }
 
 pub fn run_test_scene(scene: &str) -> SceneOutput {
-    let bin = build_test_scenes();
-
-    let output = Command::new(bin)
+    let output = Command::new("cargo")
+        .args(["run", "--example", "test-scenes"])
+        .arg("--")
         .args(["run", scene])
         .args(["--rng-seed", "0"])
         .args(["--start-time", "0"])
@@ -45,26 +43,4 @@ pub fn run_test_scene(scene: &str) -> SceneOutput {
         stdout: String::from_utf8(output.stdout).unwrap(),
         stderr: String::from_utf8(output.stderr).unwrap(),
     }
-}
-
-fn build_test_scenes() -> PathBuf {
-    static NEED_BUILD: Mutex<bool> = Mutex::new(true);
-
-    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    let crate_dir = root.join("tests/scenes");
-    let bin_path = crate_dir.join("target/debug/test-scenes");
-
-    let mut need_build = NEED_BUILD.lock().expect("poisoned");
-    if *need_build {
-        let status = Command::new("cargo")
-            .arg("build")
-            .current_dir(crate_dir)
-            .status()
-            .unwrap();
-        assert!(status.success());
-
-        *need_build = false;
-    }
-
-    bin_path
 }

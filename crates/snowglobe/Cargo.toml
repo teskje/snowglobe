@@ -14,6 +14,10 @@ tracing = "0.1"
 tracing-subscriber = { version = "0.3", optional = true }
 turmoil = { git = "https://github.com/teskje/turmoil.git" }
 
+[dev-dependencies]
+tokio = "1"
+uuid = { version = "1", features = ["v7"] }
+
 [lints]
 workspace = true
 

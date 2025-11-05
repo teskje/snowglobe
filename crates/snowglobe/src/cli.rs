@@ -65,6 +65,15 @@ fn run(args: RunArgs) -> Result {
         start_time: Duration::from_millis(args.start_time),
     });
     scene(sim);
+    let rng_seed = args.rng_seed.unwrap_or_else(|| rand::random());
+    let start_time_ms = args.start_time.unwrap_or(0);
+
+    let cfg = Config {
+        rng_seed,
+        start_time: Duration::from_millis(start_time_ms),
+    };
+
+    simulation(cfg, scene);
 
     Ok(())
 }

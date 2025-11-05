@@ -27,14 +27,20 @@ pub struct Config {
     pub start_time: Duration,
 }
 
-pub fn simulation(cfg: Config) -> Sim {
-    context::seed(cfg.rng_seed, cfg.start_time);
+pub fn simulation<F>(cfg: Config, scene: F)
+where
+    F: FnOnce(Sim),
+{
+    context::enter_simulation(cfg.rng_seed, cfg.start_time);
 
-    turmoil::Builder::new()
+    let sim = turmoil::Builder::new()
         .enable_random_order()
         .epoch(UNIX_EPOCH.checked_add(cfg.start_time).unwrap())
         .tick_duration(Duration::from_millis(1))
         .rng_seed(cfg.rng_seed)
-        .build()
-        .into()
+        .build();
+
+    scene(sim.into());
+
+    context::exit_simulation();
 }

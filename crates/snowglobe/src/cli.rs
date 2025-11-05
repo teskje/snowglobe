@@ -4,6 +4,8 @@ use std::time::Duration;
 use crate::{Config, Result, Sim, simulation};
 
 pub use snowglobe_macros::scene;
+use snowglobe_proto as proto;
+use snowglobe_proto::Message as _;
 use tracing::info;
 
 #[derive(argh::FromArgs)]
@@ -16,14 +18,14 @@ struct Args {
 #[derive(argh::FromArgs)]
 #[argh(subcommand)]
 enum Command {
-    List(ListArgs),
+    Info(InfoArgs),
     Run(RunArgs),
 }
 
 #[derive(argh::FromArgs)]
-/// list all scenes
-#[argh(subcommand, name = "list")]
-struct ListArgs {}
+/// print information about this scene binary
+#[argh(subcommand, name = "info")]
+struct InfoArgs {}
 
 #[derive(argh::FromArgs)]
 /// run a scene
@@ -45,7 +47,7 @@ pub fn main() -> Result {
     init_logging();
 
     match args.command {
-        Command::List(_args) => list(),
+        Command::Info(_args) => info(),
         Command::Run(args) => run(args)?,
     }
 
@@ -66,10 +68,11 @@ fn init_logging() {
         .init();
 }
 
-fn list() {
-    for name in scenes().keys() {
-        println!("{name}");
-    }
+fn info() {
+    let scenes = scenes().keys().cloned().collect();
+    let info = proto::Info { scenes };
+
+    print!("{}", info.serialize());
 }
 
 fn run(args: RunArgs) -> Result {

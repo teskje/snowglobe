@@ -4,6 +4,7 @@ use std::time::Duration;
 use crate::{Config, Result, Sim, simulation};
 
 pub use snowglobe_macros::scene;
+use tracing::info;
 
 #[derive(argh::FromArgs)]
 /// Run snowglobe simulations
@@ -33,10 +34,10 @@ struct RunArgs {
     scene: String,
     /// RNG seed for the simulation
     #[argh(option)]
-    rng_seed: u64,
+    rng_seed: Option<u64>,
     /// start time of the simulation, in epoch ms
     #[argh(option)]
-    start_time: u64,
+    start_time: Option<u64>,
 }
 
 pub fn main() -> Result {
@@ -57,15 +58,14 @@ fn list() {
 }
 
 fn run(args: RunArgs) -> Result {
+    tracing_subscriber::fmt()
+        .with_writer(std::io::stderr)
+        .init();
+
     let scenes = scenes();
     let scene = scenes.get(&args.scene).ok_or("scene does not exist")?;
 
-    let sim = simulation(Config {
-        rng_seed: args.rng_seed,
-        start_time: Duration::from_millis(args.start_time),
-    });
-    scene(sim);
-    let rng_seed = args.rng_seed.unwrap_or_else(|| rand::random());
+    let rng_seed = args.rng_seed.unwrap_or_else(rand::random);
     let start_time_ms = args.start_time.unwrap_or(0);
 
     let cfg = Config {
@@ -73,6 +73,7 @@ fn run(args: RunArgs) -> Result {
         start_time: Duration::from_millis(start_time_ms),
     };
 
+    info!(?cfg, "running simulation");
     simulation(cfg, scene);
 
     Ok(())

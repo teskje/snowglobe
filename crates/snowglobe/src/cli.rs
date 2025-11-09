@@ -42,6 +42,7 @@ struct RunArgs {
 
 pub fn main() -> Result {
     let args: Args = argh::from_env();
+    init_logging();
 
     match args.command {
         Command::List(_args) => list(),
@@ -51,6 +52,20 @@ pub fn main() -> Result {
     Ok(())
 }
 
+fn init_logging() {
+    use tracing::level_filters::LevelFilter;
+    use tracing_subscriber::EnvFilter;
+
+    let env_filter = EnvFilter::builder()
+        .with_default_directive(LevelFilter::INFO.into())
+        .from_env_lossy();
+
+    tracing_subscriber::fmt()
+        .with_writer(std::io::stderr)
+        .with_env_filter(env_filter)
+        .init();
+}
+
 fn list() {
     for name in scenes().keys() {
         println!("{name}");
@@ -58,10 +73,6 @@ fn list() {
 }
 
 fn run(args: RunArgs) -> Result {
-    tracing_subscriber::fmt()
-        .with_writer(std::io::stderr)
-        .init();
-
     let scenes = scenes();
     let scene = scenes.get(&args.scene).ok_or("scene does not exist")?;
 

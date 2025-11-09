@@ -31,6 +31,7 @@ macro_rules! test {
 }
 
 test!(random_numbers);
+test!(openssl_rand_bytes);
 test!(select_branch);
 test!(hashset_order);
 test!(tokio_time);

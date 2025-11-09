@@ -32,10 +32,6 @@ pub(crate) fn enter_simulation(seed: u64, start_time: Duration) {
     CONTEXT.set(Some(ctx));
 }
 
-pub(crate) fn exit_simulation() {
-    CONTEXT.set(None);
-}
-
 pub(crate) fn advance_time(new_time: Duration) {
     with_or(
         |ctx| {

@@ -15,7 +15,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"], optional = tr
 turmoil = { git = "https://github.com/teskje/turmoil.git" }
 
 [dev-dependencies]
-openssl = "0.10"
+openssl = { version = "0.10", features = ["vendored"] }
 tokio = "1"
 uuid = { version = "1", features = ["v7"] }
 

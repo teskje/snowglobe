@@ -1,6 +1,22 @@
-use libc::{c_int, c_void, pthread_attr_t, pthread_t};
+use libc::{c_int, c_void, pid_t, pthread_attr_t, pthread_t};
 
 use super::patch;
+
+// https://man7.org/linux/man-pages/man2/getpid.2.html
+patch! {
+    fn getpid() -> pid_t
+    |_ctx| {
+        12345
+    }
+}
+
+// https://man7.org/linux/man-pages/man3/pthread_self.3.html
+patch! {
+    fn pthread_self() -> pthread_t
+    |_ctx| {
+        98765
+    }
+}
 
 // https://man7.org/linux/man-pages/man3/pthread_create.3.html
 patch! {

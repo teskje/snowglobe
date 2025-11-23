@@ -41,13 +41,3 @@ patch! {
         libc::kCCSuccess
     }
 }
-
-// https://docs.openssl.org/3.1/man3/RAND_bytes
-patch! {
-    fn RAND_bytes(buf: *mut u8, num: c_int) -> c_int
-    |ctx| {
-        let len = num as usize;
-        unsafe { fill_raw(&mut ctx.rng, buf.cast(), len) };
-        1
-    }
-}

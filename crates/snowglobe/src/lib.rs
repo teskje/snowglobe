@@ -8,13 +8,14 @@
 ))]
 compile_error!("This crate requires `--cfg getrandom_backend=\"linux_getrandom\"");
 
+mod cli;
 mod context;
 mod error;
 mod patch;
 mod sim;
 
-#[cfg(feature = "cli")]
-pub mod cli;
-
+pub use crate::cli::{__private, main};
 pub use crate::error::{Error, Result};
 pub use crate::sim::Sim;
+
+pub use snowglobe_macros::scene;

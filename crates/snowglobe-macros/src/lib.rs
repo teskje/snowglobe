@@ -11,7 +11,7 @@ pub fn scene(_args: TokenStream, item: TokenStream) -> TokenStream {
         #func
 
         const _: () = {
-            use ::snowglobe::cli::__private::{SCENES, Scene, linkme};
+            use ::snowglobe::__private::{SCENES, Scene, linkme};
 
             #[linkme::distributed_slice(SCENES)]
             #[linkme(crate = linkme)]

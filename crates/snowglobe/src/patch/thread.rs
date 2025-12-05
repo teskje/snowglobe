@@ -11,12 +11,13 @@ patch! {
 }
 
 // https://man7.org/linux/man-pages/man3/pthread_self.3.html
-patch! {
-    fn pthread_self() -> pthread_t
-    |_ctx| {
-        98765
-    }
-}
+// FIXME: "failed to allocate a guard page: Cannot allocate memory (os error 12)"
+// patch! {
+//     fn pthread_self() -> pthread_t
+//     |_ctx| {
+//         98765
+//     }
+// }
 
 // https://man7.org/linux/man-pages/man3/pthread_create.3.html
 patch! {

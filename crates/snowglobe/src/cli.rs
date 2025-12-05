@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
-use std::time::Duration;
+use std::time::{Duration, UNIX_EPOCH};
 
-use crate::{Config, Result, Sim, simulation};
+use crate::{Result, Sim, context};
 
 pub use snowglobe_macros::scene;
 use snowglobe_proto as proto;
@@ -36,7 +36,7 @@ struct RunArgs {
     scene: String,
     /// RNG seed for the simulation
     #[argh(option)]
-    rng_seed: Option<u64>,
+    rng_seed: u64,
     /// start time of the simulation, in epoch ms
     #[argh(option)]
     start_time: Option<u64>,
@@ -79,16 +79,23 @@ fn run(args: RunArgs) -> Result {
     let scenes = scenes();
     let scene = scenes.get(&args.scene).ok_or("scene does not exist")?;
 
-    let rng_seed = args.rng_seed.unwrap_or_else(rand::random);
+    let rng_seed = args.rng_seed;
     let start_time_ms = args.start_time.unwrap_or(0);
+    let start_time = Duration::from_millis(start_time_ms);
 
-    let cfg = Config {
-        rng_seed,
-        start_time: Duration::from_millis(start_time_ms),
-    };
+    info!(%rng_seed, ?start_time, "running simulation");
 
-    info!(?cfg, "running simulation");
-    simulation(cfg, scene);
+    context::init(rng_seed, start_time);
+
+    let epoch = UNIX_EPOCH.checked_add(start_time).unwrap();
+    let sim = turmoil::Builder::new()
+        .enable_random_order()
+        .epoch(epoch)
+        .tick_duration(Duration::from_millis(1))
+        .rng_seed(rng_seed)
+        .build();
+
+    scene(sim.into());
 
     Ok(())
 }

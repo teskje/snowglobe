@@ -3,7 +3,6 @@ use std::time::{Duration, UNIX_EPOCH};
 
 use crate::{Result, Sim, context};
 
-pub use snowglobe_macros::scene;
 use snowglobe_proto as proto;
 use snowglobe_proto::Message as _;
 use tracing::info;

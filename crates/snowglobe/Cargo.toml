@@ -5,15 +5,15 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-argh = { version = "0.1", optional = true }
+argh = "0.1"
 libc = "0.2"
 linkme = "0.3"
 rand = "0.9"
-snowglobe-macros = { path = "../snowglobe-macros", optional = true }
-snowglobe-proto = { path = "../snowglobe-proto", optional = true }
+snowglobe-macros.path = "../snowglobe-macros"
+snowglobe-proto.path = "../snowglobe-proto"
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"], optional = true }
-turmoil = { git = "https://github.com/teskje/turmoil.git" }
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+turmoil.git = "https://github.com/tokio-rs/turmoil.git"
 
 [dev-dependencies]
 openssl = { version = "0.10", features = ["vendored"] }
@@ -22,12 +22,3 @@ uuid = { version = "1", features = ["v7"] }
 
 [lints]
 workspace = true
-
-[features]
-default = ["cli"]
-cli = [
-    "dep:argh",
-    "dep:snowglobe-macros",
-    "dep:snowglobe-proto",
-    "dep:tracing-subscriber",
-]

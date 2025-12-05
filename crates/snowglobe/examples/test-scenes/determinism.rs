@@ -2,10 +2,9 @@ use std::collections::HashSet;
 use std::time::Duration;
 
 use snowglobe::Sim;
-use snowglobe::cli::scene;
 use tokio::time::sleep;
 
-#[scene]
+#[snowglobe::scene]
 fn random_numbers(_sim: Sim) {
     print!("{},", rand::random::<u8>());
     print!("{},", rand::random::<u16>());
@@ -14,14 +13,14 @@ fn random_numbers(_sim: Sim) {
     print!("{},", rand::random::<u128>());
 }
 
-#[scene]
+#[snowglobe::scene]
 fn openssl_rand_bytes(_sim: Sim) {
     let mut buf = [0; 10];
     openssl::rand::rand_bytes(&mut buf).unwrap();
     print!("{buf:?}");
 }
 
-#[scene]
+#[snowglobe::scene]
 fn select_branch(mut sim: Sim) {
     sim.client("test", async {
         for _ in 0..10 {
@@ -37,14 +36,14 @@ fn select_branch(mut sim: Sim) {
     sim.run().unwrap();
 }
 
-#[scene]
+#[snowglobe::scene]
 fn hashset_order(_sim: Sim) {
     let set: HashSet<_> = (0..10).collect();
     let vec: Vec<_> = set.into_iter().collect();
     print!("{vec:?}");
 }
 
-#[scene]
+#[snowglobe::scene]
 fn tokio_time(mut sim: Sim) {
     use tokio::time::Instant;
 
@@ -60,7 +59,7 @@ fn tokio_time(mut sim: Sim) {
     sim.run().unwrap();
 }
 
-#[scene]
+#[snowglobe::scene]
 fn std_time(mut sim: Sim) {
     use std::time::{Instant, SystemTime};
 
@@ -76,7 +75,7 @@ fn std_time(mut sim: Sim) {
     sim.run().unwrap();
 }
 
-#[scene]
+#[snowglobe::scene]
 fn uuid(_sim: Sim) {
     print!("{}", uuid::Uuid::now_v7());
 }

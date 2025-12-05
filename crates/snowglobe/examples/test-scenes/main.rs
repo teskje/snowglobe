@@ -2,5 +2,5 @@ mod containment;
 mod determinism;
 
 fn main() -> snowglobe::Result {
-    snowglobe::cli::main()
+    snowglobe::main()
 }

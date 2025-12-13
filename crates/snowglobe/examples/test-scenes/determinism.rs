@@ -79,3 +79,15 @@ fn std_time(mut sim: Sim) {
 fn uuid(_sim: Sim) {
     print!("{}", uuid::Uuid::now_v7());
 }
+
+#[snowglobe::scene]
+fn heap_address(_sim: Sim) {
+    let v = vec![1];
+    print!("{:?}", v.as_ptr());
+}
+
+#[snowglobe::scene]
+fn heap_address_ffi(_sim: Sim) {
+    let ptr = unsafe { libc::malloc(1) };
+    print!("{:?}", ptr);
+}

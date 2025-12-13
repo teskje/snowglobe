@@ -11,9 +11,13 @@ linkme = "0.3"
 rand = "0.9"
 snowglobe-macros.path = "../snowglobe-macros"
 snowglobe-proto.path = "../snowglobe-proto"
+rlsf = "0.2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 turmoil.git = "https://github.com/tokio-rs/turmoil.git"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+mach2 = "0.4"
 
 [dev-dependencies]
 openssl = { version = "0.10", features = ["vendored"] }

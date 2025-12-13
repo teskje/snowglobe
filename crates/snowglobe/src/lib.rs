@@ -8,6 +8,7 @@
 ))]
 compile_error!("This crate requires `--cfg getrandom_backend=\"linux_getrandom\"");
 
+mod alloc;
 mod cli;
 mod context;
 mod error;

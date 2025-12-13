@@ -1,3 +1,4 @@
+mod memory;
 mod rng;
 mod thread;
 mod time;

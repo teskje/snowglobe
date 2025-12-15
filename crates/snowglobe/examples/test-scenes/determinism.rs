@@ -82,8 +82,8 @@ fn uuid(_sim: Sim) {
 
 #[snowglobe::scene]
 fn heap_address(_sim: Sim) {
-    let v = vec![1];
-    print!("{:?}", v.as_ptr());
+    let b = Box::new(1);
+    print!("{:?}", &*b as *const _);
 }
 
 #[snowglobe::scene]

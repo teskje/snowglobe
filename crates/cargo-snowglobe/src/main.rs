@@ -1,10 +1,11 @@
 mod scene_binary;
 mod target;
 
-use std::io::BufReader;
+use std::io::{BufRead as _, BufReader};
 use std::path::PathBuf;
 use std::process::Stdio;
-use std::{env, process};
+use std::sync::mpsc;
+use std::{env, iter, process, thread};
 
 use anyhow::bail;
 use clap::Parser as _;
@@ -55,6 +56,8 @@ enum Command {
     List,
     /// Run a scene
     Run(RunArgs),
+    /// Check determinism of a scene run
+    CheckDeterminism(RunArgs),
 }
 
 #[derive(clap::Args)]
@@ -90,6 +93,7 @@ fn main() -> anyhow::Result<()> {
     match args.command {
         Command::List => list(&binary),
         Command::Run(args) => run(&binary, &args)?,
+        Command::CheckDeterminism(args) => check_determinism(&binary, &args)?,
     }
 
     Ok(())
@@ -144,5 +148,81 @@ fn list(binary: &SceneBinary) {
 }
 
 fn run(binary: &SceneBinary, args: &RunArgs) -> anyhow::Result<()> {
-    binary.run(&args.scene, args.rng_seed, args.start_time)
+    let rng_seed = args.rng_seed.unwrap_or_else(rand::random);
+
+    let mut proc = binary.run(&args.scene, rng_seed, args.start_time, None)?;
+    let stdout = BufReader::new(proc.stdout.take().unwrap());
+    let stderr = BufReader::new(proc.stderr.take().unwrap());
+
+    let stdout_thread = thread::spawn(move || {
+        for line in stdout.lines() {
+            println!("{}", line.unwrap());
+        }
+    });
+    let stderr_thread = thread::spawn(move || {
+        for line in stderr.lines() {
+            eprintln!("{}", line.unwrap());
+        }
+    });
+
+    let status = proc.wait()?;
+    stdout_thread.join().unwrap();
+    stderr_thread.join().unwrap();
+
+    if !status.success() {
+        bail!("running scene binary failed ({status})");
+    }
+
+    Ok(())
+}
+
+fn check_determinism(binary: &SceneBinary, args: &RunArgs) -> anyhow::Result<()> {
+    let rng_seed = args.rng_seed.unwrap_or_else(rand::random);
+    let log_filter = Some("trace");
+
+    let mut proc1 = binary.run(&args.scene, rng_seed, args.start_time, log_filter)?;
+    let stdout1 = BufReader::new(proc1.stdout.take().unwrap());
+    let stderr1 = BufReader::new(proc1.stderr.take().unwrap());
+
+    let mut proc2 = binary.run(&args.scene, rng_seed, args.start_time, log_filter)?;
+    let stdout2 = BufReader::new(proc2.stdout.take().unwrap());
+    let stderr2 = BufReader::new(proc2.stderr.take().unwrap());
+
+    let (tx1, rx) = mpsc::channel();
+    let tx2 = tx1.clone();
+
+    let stdout_thread = thread::spawn(move || {
+        let pairs = iter::zip(stdout1.lines(), stdout2.lines());
+        for (line1, line2) in pairs {
+            let (line1, line2) = (line1.unwrap(), line2.unwrap());
+            if line1 != line2 {
+                tx1.send((line1, line2)).unwrap();
+            }
+        }
+    });
+    let stderr_thread = thread::spawn(move || {
+        let pairs = iter::zip(stderr1.lines(), stderr2.lines());
+        for (line1, line2) in pairs {
+            let (line1, line2) = (line1.unwrap(), line2.unwrap());
+            if line1 != line2 {
+                tx2.send((line1, line2)).unwrap();
+            }
+        }
+    });
+
+    let result = rx.recv();
+
+    proc1.kill()?;
+    proc2.kill()?;
+    stdout_thread.join().unwrap();
+    stderr_thread.join().unwrap();
+
+    if let Ok(mismatch) = result {
+        let (line1, line2) = mismatch;
+        eprintln!("mismatch:\n\t1: {line1}\n\t2: {line2}");
+        bail!("scene produced non-deterministic output");
+    }
+
+    println!("determinism check successful");
+    Ok(())
 }

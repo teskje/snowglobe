@@ -36,28 +36,28 @@ impl SceneBinary {
     pub fn run(
         &self,
         scene: &str,
-        rng_seed: Option<u64>,
+        rng_seed: u64,
         start_time: Option<u64>,
-    ) -> anyhow::Result<()> {
-        let seed = rng_seed.unwrap_or_else(rand::random);
-
+        log_filter: Option<&str>,
+    ) -> anyhow::Result<process::Child> {
         let mut cmd = process::Command::new(&self.path);
         cmd.args(["run", scene]);
-        cmd.args(["--rng-seed", &seed.to_string()]);
+        cmd.args(["--rng-seed", &rng_seed.to_string()]);
 
         if let Some(time) = start_time {
             cmd.args(["--start-time", &time.to_string()]);
         }
+        if let Some(filter) = log_filter {
+            cmd.env("RUST_LOG", filter);
+        }
+
+        cmd.stdout(process::Stdio::piped());
+        cmd.stderr(process::Stdio::piped());
 
         #[cfg(target_os = "linux")]
         disable_aslr(&mut cmd);
 
-        let status = cmd.status()?;
-        if !status.success() {
-            bail!("running scene binary failed ({status})");
-        }
-
-        Ok(())
+        Ok(cmd.spawn()?)
     }
 }
 

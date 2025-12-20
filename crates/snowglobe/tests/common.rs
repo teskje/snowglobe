@@ -36,30 +36,11 @@ pub fn run_test_scene(scene: &str) -> SceneOutput {
         .args(["--rng-seed", "0"])
         .args(["--start-time", "0"]);
 
-    #[cfg(target_os = "linux")]
-    disable_aslr(&mut cmd);
-
     let output = cmd.output().unwrap();
 
     SceneOutput {
         status: output.status,
         stdout: String::from_utf8(output.stdout).unwrap(),
         stderr: String::from_utf8(output.stderr).unwrap(),
-    }
-}
-
-#[cfg(target_os = "linux")]
-fn disable_aslr(cmd: &mut Command) {
-    use libc::{ADDR_NO_RANDOMIZE, c_ulong, personality};
-    use std::os::unix::process::CommandExt;
-
-    unsafe {
-        cmd.pre_exec(|| {
-            let old = personality(0xffffffff);
-            assert_ne!(old, -1);
-            let new = (old | ADDR_NO_RANDOMIZE) as c_ulong;
-            assert_ne!(personality(new), -1);
-            Ok(())
-        });
     }
 }

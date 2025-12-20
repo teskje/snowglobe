@@ -49,11 +49,30 @@ impl SceneBinary {
             cmd.args(["--start-time", &time.to_string()]);
         }
 
+        #[cfg(target_os = "linux")]
+        disable_aslr(&mut cmd);
+
         let status = cmd.status()?;
         if !status.success() {
             bail!("running scene binary failed ({status})");
         }
 
         Ok(())
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn disable_aslr(cmd: &mut process::Command) {
+    use libc::{ADDR_NO_RANDOMIZE, c_ulong, personality};
+    use std::os::unix::process::CommandExt;
+
+    unsafe {
+        cmd.pre_exec(|| {
+            let old = personality(0xffffffff);
+            assert_ne!(old, -1);
+            let new = (old | ADDR_NO_RANDOMIZE) as c_ulong;
+            assert_ne!(personality(new), -1);
+            Ok(())
+        });
     }
 }

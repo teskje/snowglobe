@@ -8,6 +8,7 @@ rust-version.workspace = true
 anyhow = "1"
 cargo_metadata = "0.23"
 clap = { version = "4", features = ["derive"] }
+libc = "0.2"
 rand = "0.9"
 snowglobe-proto.path = "../snowglobe-proto"
 

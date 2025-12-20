@@ -5,6 +5,7 @@ use anyhow::{Context, bail};
 use snowglobe_proto as proto;
 use snowglobe_proto::Message as _;
 
+#[derive(Clone, Debug)]
 pub struct SceneBundle {
     path: PathBuf,
     scenes: Vec<String>,

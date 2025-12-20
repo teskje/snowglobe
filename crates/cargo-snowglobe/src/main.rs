@@ -1,7 +1,9 @@
+mod fuzz;
 mod scene_bundle;
 mod target;
 
 use std::io::{BufRead as _, BufReader};
+use std::num::NonZero;
 use std::path::PathBuf;
 use std::process::Stdio;
 use std::sync::mpsc;
@@ -18,12 +20,12 @@ use crate::scene_bundle::SceneBundle;
 #[command(version)]
 struct Args {
     /// Package with the target to run
-    #[arg(short, long)]
+    #[arg(long, short)]
     package: Option<String>,
     #[command(flatten)]
     target: TargetArgs,
     /// Build artifacts in release mode, with optimizations
-    #[arg(short, long)]
+    #[arg(long, short)]
     release: bool,
 
     #[command(subcommand)]
@@ -60,6 +62,8 @@ enum Command {
     List,
     /// Run a scene
     Run(RunArgs),
+    /// Fuzz one or all scenes
+    Fuzz(FuzzArgs),
     /// Check determinism of a scene run
     CheckDeterminism(RunArgs),
 }
@@ -76,6 +80,19 @@ struct RunArgs {
     start_time: Option<u64>,
 }
 
+#[derive(clap::Args)]
+struct FuzzArgs {
+    /// Name of the scene to fuzz (default: all scenes)
+    #[arg(long, short)]
+    scene: Option<String>,
+    /// Number of runs (default: ∞)
+    #[arg(long, short = 'n')]
+    runs: Option<u64>,
+    /// Number of parallel jobs (default: # of CPUs)
+    #[arg(long, short)]
+    jobs: Option<NonZero<usize>>,
+}
+
 fn main() -> anyhow::Result<()> {
     let mut args: Vec<_> = env::args().collect();
 
@@ -89,15 +106,16 @@ fn main() -> anyhow::Result<()> {
     let package_name = args.package.as_deref();
     let (kind, name) = args.target.kind_and_name();
     let target_spec = target::select(package_name, kind, name)?;
-    println!("target: {target_spec}");
+    eprintln!("target: {target_spec}");
 
     let bundle_path = build(&target_spec, args.release)?;
     let bundle = SceneBundle::new(bundle_path)?;
 
     match args.command {
-        Command::List => list(&bundle),
-        Command::Run(args) => run(&bundle, &args)?,
-        Command::CheckDeterminism(args) => check_determinism(&bundle, &args)?,
+        Command::List => cmd_list(&bundle),
+        Command::Run(args) => cmd_run(&bundle, &args)?,
+        Command::CheckDeterminism(args) => cmd_check_determinism(&bundle, &args)?,
+        Command::Fuzz(args) => cmd_fuzz(&bundle, &args)?,
     }
 
     Ok(())
@@ -133,8 +151,8 @@ fn build(target: &target::Spec, release: bool) -> anyhow::Result<PathBuf> {
                     path = Some(exe);
                 }
             }
-            Message::CompilerMessage(msg) => println!("{}", msg.message),
-            Message::TextLine(line) => println!("{line}"),
+            Message::CompilerMessage(msg) => eprintln!("{}", msg.message),
+            Message::TextLine(line) => eprintln!("{line}"),
             _ => {}
         }
     }
@@ -148,13 +166,13 @@ fn build(target: &target::Spec, release: bool) -> anyhow::Result<PathBuf> {
     Ok(path.into())
 }
 
-fn list(bundle: &SceneBundle) {
+fn cmd_list(bundle: &SceneBundle) {
     for name in bundle.scenes() {
         println!("{name}");
     }
 }
 
-fn run(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result<()> {
+fn cmd_run(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result<()> {
     let rng_seed = args.rng_seed.unwrap_or_else(rand::random);
 
     let mut proc = bundle.run(&args.scene, rng_seed, args.start_time, None)?;
@@ -163,7 +181,7 @@ fn run(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result<()> {
 
     let stdout_thread = thread::spawn(move || {
         for line in stdout.lines() {
-            println!("{}", line.unwrap());
+            eprintln!("{}", line.unwrap());
         }
     });
     let stderr_thread = thread::spawn(move || {
@@ -183,7 +201,22 @@ fn run(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn check_determinism(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result<()> {
+fn cmd_fuzz(bundle: &SceneBundle, args: &FuzzArgs) -> anyhow::Result<()> {
+    let scenes = match &args.scene {
+        Some(name) => vec![name.clone()],
+        None => bundle.scenes().map(ToString::to_string).collect(),
+    };
+    let jobs = args.jobs.unwrap_or_else(|| {
+        let x = thread::available_parallelism();
+        x.unwrap_or(NonZero::new(1).unwrap())
+    });
+    let runs = args.runs.unwrap_or(u64::MAX);
+
+    eprintln!("Fuzzing {} scene(s) with {jobs} jobs", scenes.len());
+    fuzz::fuzz(bundle, &scenes, jobs, runs)
+}
+
+fn cmd_check_determinism(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result<()> {
     let rng_seed = args.rng_seed.unwrap_or_else(rand::random);
     let log_filter = Some("trace");
 
@@ -230,6 +263,6 @@ fn check_determinism(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result<()>
         bail!("scene produced non-deterministic output");
     }
 
-    println!("determinism check successful");
+    eprintln!("determinism check successful");
     Ok(())
 }

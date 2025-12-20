@@ -17,10 +17,14 @@ use crate::scene_bundle::SceneBundle;
 #[command(bin_name = "cargo snowglobe")]
 #[command(version)]
 struct Args {
+    /// Package with the target to run
     #[arg(short, long)]
     package: Option<String>,
     #[command(flatten)]
     target: TargetArgs,
+    /// Build artifacts in release mode, with optimizations
+    #[arg(short, long)]
+    release: bool,
 
     #[command(subcommand)]
     command: Command,
@@ -87,7 +91,7 @@ fn main() -> anyhow::Result<()> {
     let target_spec = target::select(package_name, kind, name)?;
     println!("target: {target_spec}");
 
-    let bundle_path = build(&target_spec)?;
+    let bundle_path = build(&target_spec, args.release)?;
     let bundle = SceneBundle::new(bundle_path)?;
 
     match args.command {
@@ -99,11 +103,14 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn build(target: &target::Spec) -> anyhow::Result<PathBuf> {
+fn build(target: &target::Spec, release: bool) -> anyhow::Result<PathBuf> {
     use cargo_metadata::Message;
 
     let mut cmd = process::Command::new("cargo");
     cmd.args(["build", "--message-format", "json"]);
+    if release {
+        cmd.arg("--release");
+    }
 
     cmd.args(["--package", &target.package.name]);
     match target.kind {

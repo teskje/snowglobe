@@ -5,12 +5,12 @@ use anyhow::{Context, bail};
 use snowglobe_proto as proto;
 use snowglobe_proto::Message as _;
 
-pub struct SceneBinary {
+pub struct SceneBundle {
     path: PathBuf,
     scenes: Vec<String>,
 }
 
-impl SceneBinary {
+impl SceneBundle {
     pub fn new(path: PathBuf) -> anyhow::Result<Self> {
         let output = process::Command::new(&path)
             .arg("info")
@@ -18,10 +18,10 @@ impl SceneBinary {
             .output()?;
 
         if !output.status.success() {
-            bail!("running scene binary failed");
+            bail!("running scene bundle failed");
         }
 
-        let info = proto::Info::deserialize(&output.stdout).context("parsing scene binary info")?;
+        let info = proto::Info::deserialize(&output.stdout).context("parsing scene bundle info")?;
 
         Ok(Self {
             path,

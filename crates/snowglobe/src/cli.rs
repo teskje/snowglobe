@@ -22,7 +22,7 @@ enum Command {
 }
 
 #[derive(argh::FromArgs)]
-/// print information about this scene binary
+/// print information about this scene bundle
 #[argh(subcommand, name = "info")]
 struct InfoArgs {}
 

@@ -1,4 +1,4 @@
-mod scene_binary;
+mod scene_bundle;
 mod target;
 
 use std::io::{BufRead as _, BufReader};
@@ -10,7 +10,7 @@ use std::{env, iter, process, thread};
 use anyhow::bail;
 use clap::Parser as _;
 
-use crate::scene_binary::SceneBinary;
+use crate::scene_bundle::SceneBundle;
 
 /// Run snowglobe simulations defined in scene bundles
 #[derive(clap::Parser)]
@@ -87,13 +87,13 @@ fn main() -> anyhow::Result<()> {
     let target_spec = target::select(package_name, kind, name)?;
     println!("target: {target_spec}");
 
-    let binary_path = build(&target_spec)?;
-    let binary = SceneBinary::new(binary_path)?;
+    let bundle_path = build(&target_spec)?;
+    let bundle = SceneBundle::new(bundle_path)?;
 
     match args.command {
-        Command::List => list(&binary),
-        Command::Run(args) => run(&binary, &args)?,
-        Command::CheckDeterminism(args) => check_determinism(&binary, &args)?,
+        Command::List => list(&bundle),
+        Command::Run(args) => run(&bundle, &args)?,
+        Command::CheckDeterminism(args) => check_determinism(&bundle, &args)?,
     }
 
     Ok(())
@@ -134,23 +134,23 @@ fn build(target: &target::Spec) -> anyhow::Result<PathBuf> {
 
     let status = proc.wait()?;
     if !status.success() {
-        bail!("building scene binary failed ({status})");
+        bail!("building scene bundle failed ({status})");
     }
 
     let path = path.expect("build was successful");
     Ok(path.into())
 }
 
-fn list(binary: &SceneBinary) {
-    for name in binary.scenes() {
+fn list(bundle: &SceneBundle) {
+    for name in bundle.scenes() {
         println!("{name}");
     }
 }
 
-fn run(binary: &SceneBinary, args: &RunArgs) -> anyhow::Result<()> {
+fn run(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result<()> {
     let rng_seed = args.rng_seed.unwrap_or_else(rand::random);
 
-    let mut proc = binary.run(&args.scene, rng_seed, args.start_time, None)?;
+    let mut proc = bundle.run(&args.scene, rng_seed, args.start_time, None)?;
     let stdout = BufReader::new(proc.stdout.take().unwrap());
     let stderr = BufReader::new(proc.stderr.take().unwrap());
 
@@ -170,21 +170,21 @@ fn run(binary: &SceneBinary, args: &RunArgs) -> anyhow::Result<()> {
     stderr_thread.join().unwrap();
 
     if !status.success() {
-        bail!("running scene binary failed ({status})");
+        bail!("running scene bundle failed ({status})");
     }
 
     Ok(())
 }
 
-fn check_determinism(binary: &SceneBinary, args: &RunArgs) -> anyhow::Result<()> {
+fn check_determinism(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result<()> {
     let rng_seed = args.rng_seed.unwrap_or_else(rand::random);
     let log_filter = Some("trace");
 
-    let mut proc1 = binary.run(&args.scene, rng_seed, args.start_time, log_filter)?;
+    let mut proc1 = bundle.run(&args.scene, rng_seed, args.start_time, log_filter)?;
     let stdout1 = BufReader::new(proc1.stdout.take().unwrap());
     let stderr1 = BufReader::new(proc1.stderr.take().unwrap());
 
-    let mut proc2 = binary.run(&args.scene, rng_seed, args.start_time, log_filter)?;
+    let mut proc2 = bundle.run(&args.scene, rng_seed, args.start_time, log_filter)?;
     let stdout2 = BufReader::new(proc2.stdout.take().unwrap());
     let stderr2 = BufReader::new(proc2.stderr.take().unwrap());
 

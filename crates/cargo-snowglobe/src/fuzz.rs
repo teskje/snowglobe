@@ -97,7 +97,7 @@ fn run_job(
         let seed = rng.random();
 
         let start = Instant::now();
-        let proc = bundle.run(scene, seed, None, None)?;
+        let proc = bundle.run(scene, seed, None)?;
         let output = proc.wait_with_output()?;
         let duration = start.elapsed();
 

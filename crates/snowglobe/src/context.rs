@@ -29,10 +29,9 @@ where
     CONTEXT.with_borrow_mut(f)
 }
 
-pub(crate) fn init(seed: u64, time: Duration) {
+pub(crate) fn init_rng(seed: u64) {
     with(|ctx| {
         ctx.rng = SmallRng::seed_from_u64(seed);
-        ctx.time = time;
     });
 }
 

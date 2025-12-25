@@ -33,8 +33,7 @@ pub fn run_test_scene(scene: &str) -> SceneOutput {
     cmd.args(["run", "--example", "test-scenes"])
         .arg("--")
         .args(["run", scene])
-        .args(["--rng-seed", "0"])
-        .args(["--start-time", "0"]);
+        .args(["--rng-seed", "0"]);
 
     let output = cmd.output().unwrap();
 

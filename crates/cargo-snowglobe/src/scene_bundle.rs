@@ -38,16 +38,12 @@ impl SceneBundle {
         &self,
         scene: &str,
         rng_seed: u64,
-        start_time: Option<u64>,
         log_filter: Option<&str>,
     ) -> anyhow::Result<process::Child> {
         let mut cmd = process::Command::new(&self.path);
         cmd.args(["run", scene]);
         cmd.args(["--rng-seed", &rng_seed.to_string()]);
 
-        if let Some(time) = start_time {
-            cmd.args(["--start-time", &time.to_string()]);
-        }
         if let Some(filter) = log_filter {
             cmd.env("RUST_LOG", filter);
         }

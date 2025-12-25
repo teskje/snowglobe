@@ -75,9 +75,6 @@ struct RunArgs {
     /// RNG seed for the simulation
     #[arg(long)]
     rng_seed: Option<u64>,
-    /// Start time of the simulation, in epoch ms
-    #[arg(long)]
-    start_time: Option<u64>,
 }
 
 #[derive(clap::Args)]
@@ -175,7 +172,7 @@ fn cmd_list(bundle: &SceneBundle) {
 fn cmd_run(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result<()> {
     let rng_seed = args.rng_seed.unwrap_or_else(rand::random);
 
-    let mut proc = bundle.run(&args.scene, rng_seed, args.start_time, None)?;
+    let mut proc = bundle.run(&args.scene, rng_seed, None)?;
     let stdout = BufReader::new(proc.stdout.take().unwrap());
     let stderr = BufReader::new(proc.stderr.take().unwrap());
 
@@ -220,11 +217,11 @@ fn cmd_check_determinism(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result
     let rng_seed = args.rng_seed.unwrap_or_else(rand::random);
     let log_filter = Some("trace");
 
-    let mut proc1 = bundle.run(&args.scene, rng_seed, args.start_time, log_filter)?;
+    let mut proc1 = bundle.run(&args.scene, rng_seed, log_filter)?;
     let stdout1 = BufReader::new(proc1.stdout.take().unwrap());
     let stderr1 = BufReader::new(proc1.stderr.take().unwrap());
 
-    let mut proc2 = bundle.run(&args.scene, rng_seed, args.start_time, log_filter)?;
+    let mut proc2 = bundle.run(&args.scene, rng_seed, log_filter)?;
     let stdout2 = BufReader::new(proc2.stdout.take().unwrap());
     let stderr2 = BufReader::new(proc2.stderr.take().unwrap());
 

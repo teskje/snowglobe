@@ -84,7 +84,7 @@ patch! {
 patch! {
     fn posix_memalign(memptr: *mut *mut c_void, alignment: size_t, size: size_t) -> c_int
     |_ctx| {
-        if alignment % mem::size_of::<*mut c_void>() != 0 {
+        if !alignment.is_multiple_of(mem::size_of::<*mut c_void>()) {
             return EINVAL;
         }
         let Ok(layout) = Layout::from_size_align(size, alignment) else {

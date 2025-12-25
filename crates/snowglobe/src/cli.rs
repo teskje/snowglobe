@@ -1,8 +1,9 @@
 use std::collections::BTreeMap;
 use std::time::Duration;
 
-use crate::{Result, Sim, context};
+use crate::{Result, context};
 
+use __private::*;
 use snowglobe_proto as proto;
 use snowglobe_proto::Message as _;
 use tracing::info;
@@ -76,31 +77,52 @@ fn run(args: RunArgs) -> Result {
     let scene = scenes.get(&args.scene).ok_or("scene does not exist")?;
 
     let rng_seed = args.rng_seed;
-
-    info!(%rng_seed, "running simulation");
+    info!(scene = args.scene, rng_seed, "running simulation");
 
     context::init_rng(rng_seed);
-
-    let sim = turmoil::Builder::new()
-        .enable_random_order()
-        .tick_duration(Duration::from_millis(1))
-        .rng_seed(rng_seed)
-        .build();
-
-    scene(sim.into());
+    run_scene(scene, rng_seed);
 
     Ok(())
 }
 
-fn scenes() -> BTreeMap<String, fn(Sim)> {
-    __private::SCENES
+fn run_scene(scene: &Scene, rng_seed: u64) {
+    let mut builder = turmoil::Builder::new();
+    builder.enable_random_order();
+    builder.tick_duration(Duration::from_millis(1));
+    builder.rng_seed(rng_seed);
+
+    macro_rules! apply_config {
+        ($cfg:expr, $builder:expr, [$( $arg:ident, )*]) => {
+            $( if let Some(x) = $cfg.$arg { $builder.$arg(x); } )*
+        };
+    }
+
+    apply_config!(
+        scene.config,
+        builder,
+        [
+            simulation_duration,
+            tick_duration,
+            min_message_latency,
+            max_message_latency,
+            fail_rate,
+            repair_rate,
+        ]
+    );
+
+    let sim = builder.build().into();
+    (scene.func)(sim);
+}
+
+fn scenes() -> BTreeMap<String, &'static Scene> {
+    SCENES
         .iter()
         .map(|s| {
             let name = match s.module.split_once("::") {
                 Some((_, path)) => format!("{path}::{}", s.name),
                 None => s.name.into(),
             };
-            (name, s.func)
+            (name, s)
         })
         .collect()
 }
@@ -108,6 +130,8 @@ fn scenes() -> BTreeMap<String, fn(Sim)> {
 /// Internals used by macros.
 #[doc(hidden)]
 pub mod __private {
+    use std::time::Duration;
+
     pub use linkme;
 
     #[linkme::distributed_slice]
@@ -117,5 +141,16 @@ pub mod __private {
         pub module: &'static str,
         pub name: &'static str,
         pub func: fn(crate::Sim),
+        pub config: SceneConfig,
+    }
+
+    #[derive(Debug, PartialEq)]
+    pub struct SceneConfig {
+        pub simulation_duration: Option<Duration>,
+        pub tick_duration: Option<Duration>,
+        pub min_message_latency: Option<Duration>,
+        pub max_message_latency: Option<Duration>,
+        pub fail_rate: Option<f64>,
+        pub repair_rate: Option<f64>,
     }
 }

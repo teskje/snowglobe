@@ -257,6 +257,7 @@ fn cmd_check_determinism(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result
     if let Ok(mismatch) = result {
         let (line1, line2) = mismatch;
         eprintln!("mismatch:\n\t1: {line1}\n\t2: {line2}");
+        eprintln!("seed: {rng_seed}");
         bail!("scene produced non-deterministic output");
     }
 

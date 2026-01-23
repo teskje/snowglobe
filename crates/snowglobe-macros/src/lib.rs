@@ -18,6 +18,8 @@ pub fn scene(args: TokenStream, item: TokenStream) -> TokenStream {
     let max_message_latency = quote_option(args.max_message_latency);
     let fail_rate = quote_option(args.fail_rate);
     let repair_rate = quote_option(args.repair_rate);
+    let tcp_capacity = quote_option(args.tcp_capacity);
+    let udp_capacity = quote_option(args.udp_capacity);
 
     let expanded = quote! {
         #func
@@ -38,6 +40,8 @@ pub fn scene(args: TokenStream, item: TokenStream) -> TokenStream {
                     max_message_latency: #max_message_latency,
                     fail_rate: #fail_rate,
                     repair_rate: #repair_rate,
+                    tcp_capacity: #tcp_capacity,
+                    udp_capacity: #udp_capacity,
                 },
             };
         };
@@ -62,6 +66,8 @@ struct SceneArgs {
     max_message_latency: Option<DurationArg>,
     fail_rate: Option<f64>,
     repair_rate: Option<f64>,
+    tcp_capacity: Option<usize>,
+    udp_capacity: Option<usize>,
 }
 
 #[derive(Debug)]

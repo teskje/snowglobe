@@ -107,6 +107,8 @@ fn run_scene(scene: &Scene, rng_seed: u64) {
             max_message_latency,
             fail_rate,
             repair_rate,
+            tcp_capacity,
+            udp_capacity,
         ]
     );
 
@@ -152,5 +154,7 @@ pub mod __private {
         pub max_message_latency: Option<Duration>,
         pub fail_rate: Option<f64>,
         pub repair_rate: Option<f64>,
+        pub tcp_capacity: Option<usize>,
+        pub udp_capacity: Option<usize>,
     }
 }

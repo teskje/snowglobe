@@ -22,6 +22,8 @@ fn bare(_sim: Sim) {
             max_message_latency: None,
             fail_rate: None,
             repair_rate: None,
+            tcp_capacity: None,
+            udp_capacity: None,
         }
     );
 }
@@ -43,6 +45,8 @@ fn durations(_sim: Sim) {
             max_message_latency: Some(Duration::from_millis(100)),
             fail_rate: None,
             repair_rate: None,
+            tcp_capacity: None,
+            udp_capacity: None,
         }
     );
 }
@@ -59,6 +63,26 @@ fn rates(_sim: Sim) {
             max_message_latency: None,
             fail_rate: Some(0.1),
             repair_rate: Some(0.5),
+            tcp_capacity: None,
+            udp_capacity: None,
+        }
+    );
+}
+
+#[snowglobe::scene(tcp_capacity = 123, udp_capacity = 456)]
+fn capacities(_sim: Sim) {
+    let scene = get_scene("rates");
+    assert_eq!(
+        scene.config,
+        SceneConfig {
+            simulation_duration: None,
+            tick_duration: None,
+            min_message_latency: None,
+            max_message_latency: None,
+            fail_rate: None,
+            repair_rate: None,
+            tcp_capacity: Some(123),
+            udp_capacity: Some(456),
         }
     );
 }

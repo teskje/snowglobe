@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 use std::{process, thread};
 
 use anyhow::bail;
-use rand::Rng;
+use rand::RngExt;
 use rand::seq::IndexedRandom;
 
 use crate::scene_bundle::SceneBundle;

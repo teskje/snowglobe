@@ -12,16 +12,16 @@ deterministic-allocator = ["dep:rlsf", "dep:mach2"]
 argh = "0.1"
 libc = "0.2"
 linkme = "0.3"
-rand = "0.9"
+rand = "0.10"
 snowglobe-macros.path = "../snowglobe-macros"
 snowglobe-proto.path = "../snowglobe-proto"
 rlsf = { version = "0.2", optional = true }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-turmoil.git = "https://github.com/tokio-rs/turmoil.git"
+turmoil = "0.7.2"
 
 [target.'cfg(target_os = "macos")'.dependencies]
-mach2 = { version = "0.4", optional = true }
+mach2 = { version = "0.7", optional = true }
 
 [dev-dependencies]
 openssl = { version = "0.10", features = ["vendored"] }

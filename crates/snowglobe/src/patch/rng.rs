@@ -1,5 +1,5 @@
 use libc::{c_int, c_uint, c_void, size_t, ssize_t};
-use rand::Rng;
+use rand::RngExt;
 use rand::rngs::SmallRng;
 
 use super::patch;

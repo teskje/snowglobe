@@ -14,13 +14,6 @@ fn random_numbers(_sim: Sim) {
 }
 
 #[snowglobe::scene]
-fn openssl_rand_bytes(_sim: Sim) {
-    let mut buf = [0; 10];
-    openssl::rand::rand_bytes(&mut buf).unwrap();
-    print!("{buf:?}");
-}
-
-#[snowglobe::scene]
 fn select_branch(mut sim: Sim) {
     sim.client("test", async {
         for _ in 0..10 {
@@ -80,14 +73,26 @@ fn uuid(_sim: Sim) {
     print!("{}", uuid::Uuid::now_v7());
 }
 
-#[snowglobe::scene]
-fn heap_address(_sim: Sim) {
-    let b = Box::new(1);
-    print!("{:?}", &*b as *const _);
-}
+#[cfg(feature = "deterministic-allocator")]
+mod alloc {
+    use snowglobe::Sim;
 
-#[snowglobe::scene]
-fn heap_address_ffi(_sim: Sim) {
-    let ptr = unsafe { libc::malloc(1) };
-    print!("{:?}", ptr);
+    #[snowglobe::scene]
+    fn heap_address(_sim: Sim) {
+        let b = Box::new(1);
+        print!("{:?}", &*b as *const _);
+    }
+
+    #[snowglobe::scene]
+    fn heap_address_ffi(_sim: Sim) {
+        let ptr = unsafe { libc::malloc(1) };
+        print!("{:?}", ptr);
+    }
+
+    #[snowglobe::scene]
+    fn openssl_rand_bytes(_sim: Sim) {
+        let mut buf = [0; 10];
+        openssl::rand::rand_bytes(&mut buf).unwrap();
+        print!("{buf:?}");
+    }
 }

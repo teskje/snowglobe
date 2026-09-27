@@ -1,3 +1,4 @@
+#[cfg(feature = "deterministic-allocator")]
 mod memory;
 mod rng;
 mod thread;

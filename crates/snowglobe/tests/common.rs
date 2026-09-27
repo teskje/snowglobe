@@ -30,10 +30,10 @@ impl fmt::Display for SceneOutput {
 
 pub fn run_test_scene(scene: &str) -> SceneOutput {
     let mut cmd = Command::new("cargo");
-    cmd.args(["run", "--example", "test-scenes"])
-        .arg("--")
-        .args(["run", scene])
-        .args(["--rng-seed", "0"]);
+    cmd.args(["run", "--example", "test-scenes"]);
+    #[cfg(feature = "deterministic-allocator")]
+    cmd.args(["--features", "deterministic-allocator"]);
+    cmd.arg("--").args(["run", scene]).args(["--rng-seed", "0"]);
 
     let output = cmd.output().unwrap();
 

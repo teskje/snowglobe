@@ -1,3 +1,4 @@
+#[cfg(feature = "deterministic-allocator")]
 mod alloc;
 mod cli;
 mod context;

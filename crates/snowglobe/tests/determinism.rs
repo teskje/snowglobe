@@ -24,8 +24,8 @@ macro_rules! test {
     ($name:ident) => {
         #[test]
         fn $name() {
-            let scene = concat!("determinism::", stringify!($name));
-            test_determinism(scene);
+            let scene = concat!(module_path!(), "::", stringify!($name));
+            crate::test_determinism(scene);
         }
     };
 }
@@ -36,6 +36,10 @@ test!(hashset_order);
 test!(tokio_time);
 test!(std_time);
 test!(uuid);
-test!(heap_address);
-test!(heap_address_ffi);
-test!(openssl_rand_bytes);
+
+#[cfg(feature = "deterministic-allocator")]
+mod alloc {
+    test!(heap_address);
+    test!(heap_address_ffi);
+    test!(openssl_rand_bytes);
+}

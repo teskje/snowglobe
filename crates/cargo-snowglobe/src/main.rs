@@ -1,17 +1,19 @@
 mod fuzz;
+mod kill_on_drop;
 mod scene_bundle;
 mod target;
 
-use std::io::{BufRead as _, BufReader};
+use std::io::{BufRead, BufReader};
 use std::num::NonZero;
 use std::path::PathBuf;
 use std::process::Stdio;
 use std::sync::mpsc;
-use std::{env, iter, process, thread};
+use std::{env, fmt, process, thread};
 
 use anyhow::bail;
 use clap::Parser as _;
 
+use crate::kill_on_drop::KillOnDrop;
 use crate::scene_bundle::SceneBundle;
 
 /// Run snowglobe simulations defined in scene bundles
@@ -217,50 +219,98 @@ fn cmd_check_determinism(bundle: &SceneBundle, args: &RunArgs) -> anyhow::Result
     let rng_seed = args.rng_seed.unwrap_or_else(rand::random);
     let log_filter = Some("trace");
 
-    let mut proc1 = bundle.run(&args.scene, rng_seed, log_filter)?;
-    let stdout1 = BufReader::new(proc1.stdout.take().unwrap());
-    let stderr1 = BufReader::new(proc1.stderr.take().unwrap());
+    let result = thread::scope(|scope| {
+        let proc1 = bundle.run(&args.scene, rng_seed, log_filter)?;
+        let mut proc1 = KillOnDrop(proc1);
+        let stdout1 = BufReader::new(proc1.stdout.take().unwrap());
+        let stderr1 = BufReader::new(proc1.stderr.take().unwrap());
 
-    let mut proc2 = bundle.run(&args.scene, rng_seed, log_filter)?;
-    let stdout2 = BufReader::new(proc2.stdout.take().unwrap());
-    let stderr2 = BufReader::new(proc2.stderr.take().unwrap());
+        let proc2 = bundle.run(&args.scene, rng_seed, log_filter)?;
+        let mut proc2 = KillOnDrop(proc2);
+        let stdout2 = BufReader::new(proc2.stdout.take().unwrap());
+        let stderr2 = BufReader::new(proc2.stderr.take().unwrap());
 
-    let (tx1, rx) = mpsc::channel();
-    let tx2 = tx1.clone();
+        let (tx1, rx) = mpsc::channel();
+        let tx2 = tx1.clone();
 
-    let stdout_thread = thread::spawn(move || {
-        let pairs = iter::zip(stdout1.lines(), stdout2.lines());
-        for (line1, line2) in pairs {
-            let (line1, line2) = (line1.unwrap(), line2.unwrap());
-            if line1 != line2 {
-                tx1.send((line1, line2)).unwrap();
+        scope.spawn(move || {
+            if let Some(result) = compare_output(stdout1, stdout2).transpose() {
+                let _ = tx1.send(result);
             }
-        }
-    });
-    let stderr_thread = thread::spawn(move || {
-        let pairs = iter::zip(stderr1.lines(), stderr2.lines());
-        for (line1, line2) in pairs {
-            let (line1, line2) = (line1.unwrap(), line2.unwrap());
-            if line1 != line2 {
-                tx2.send((line1, line2)).unwrap();
+        });
+        scope.spawn(move || {
+            if let Some(result) = compare_output(stderr1, stderr2).transpose() {
+                let _ = tx2.send(result);
             }
+        });
+
+        let result = rx.recv();
+        if let Ok(mismatch_or_error) = result {
+            let mismatch = mismatch_or_error?;
+            eprintln!("{mismatch}");
+            bail!("scene produced non-deterministic output");
         }
+
+        let status1 = proc1.wait()?;
+        let status2 = proc2.wait()?;
+        if !status1.success() || !status2.success() {
+            bail!("running scene bundle failed (run 1: {status1}, run 2: {status2})");
+        }
+
+        Ok(())
     });
 
-    let result = rx.recv();
-
-    proc1.kill()?;
-    proc2.kill()?;
-    stdout_thread.join().unwrap();
-    stderr_thread.join().unwrap();
-
-    if let Ok(mismatch) = result {
-        let (line1, line2) = mismatch;
-        eprintln!("mismatch:\n\t1: {line1}\n\t2: {line2}");
-        eprintln!("seed: {rng_seed}");
-        bail!("scene produced non-deterministic output");
+    match result {
+        Ok(_) => eprintln!("determinism check successful"),
+        Err(_) => eprintln!("seed: {rng_seed}"),
     }
 
-    eprintln!("determinism check successful");
-    Ok(())
+    result
+}
+
+struct Mismatch {
+    line1: String,
+    line2: String,
+}
+
+impl fmt::Display for Mismatch {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fn write_line(f: &mut fmt::Formatter<'_>, line: &str) -> fmt::Result {
+            if line.is_empty() {
+                f.write_str("<eof>")
+            } else {
+                f.write_str(line.trim_end())
+            }
+        }
+
+        f.write_str("mismatch:")?;
+        write!(f, "\n\t1: ")?;
+        write_line(f, &self.line1)?;
+        write!(f, "\n\t2: ")?;
+        write_line(f, &self.line2)?;
+
+        Ok(())
+    }
+}
+
+fn compare_output(
+    mut output1: impl BufRead,
+    mut output2: impl BufRead,
+) -> anyhow::Result<Option<Mismatch>> {
+    let mut line1 = String::new();
+    let mut line2 = String::new();
+
+    let mismatch = loop {
+        line1.clear();
+        line2.clear();
+        output1.read_line(&mut line1)?;
+        output2.read_line(&mut line2)?;
+
+        if line1 != line2 {
+            break Some(Mismatch { line1, line2 });
+        } else if line1.is_empty() {
+            break None;
+        }
+    };
+    Ok(mismatch)
 }

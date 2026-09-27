@@ -21,3 +21,4 @@ macro_rules! test {
 test!(bare);
 test!(durations);
 test!(rates);
+test!(capacities);

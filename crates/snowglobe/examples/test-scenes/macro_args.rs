@@ -71,7 +71,7 @@ fn rates(_sim: Sim) {
 
 #[snowglobe::scene(tcp_capacity = 123, udp_capacity = 456)]
 fn capacities(_sim: Sim) {
-    let scene = get_scene("rates");
+    let scene = get_scene("capacities");
     assert_eq!(
         scene.config,
         SceneConfig {

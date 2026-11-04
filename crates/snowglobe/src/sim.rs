@@ -8,6 +8,8 @@ pub struct Sim(turmoil::Sim<'static>);
 
 impl From<turmoil::Sim<'static>> for Sim {
     fn from(sim: turmoil::Sim<'static>) -> Self {
+        context::advance_time(sim.since_epoch());
+
         Self(sim)
     }
 }

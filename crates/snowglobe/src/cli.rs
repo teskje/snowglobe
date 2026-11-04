@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use std::time::Duration;
+use std::time::{Duration, UNIX_EPOCH};
 
 use crate::{Result, context};
 
@@ -91,6 +91,10 @@ fn run_scene(scene: &Scene, rng_seed: u64) {
     builder.tick_duration(Duration::from_millis(1));
     builder.rng_seed(rng_seed);
 
+    if let Some(start_time) = scene.config.start_time {
+        builder.epoch(UNIX_EPOCH + start_time);
+    }
+
     macro_rules! apply_config {
         ($cfg:expr, $builder:expr, [$( $arg:ident, )*]) => {
             $( if let Some(x) = $cfg.$arg { $builder.$arg(x); } )*
@@ -148,6 +152,7 @@ pub mod __private {
 
     #[derive(Debug, PartialEq)]
     pub struct SceneConfig {
+        pub start_time: Option<Duration>,
         pub simulation_duration: Option<Duration>,
         pub tick_duration: Option<Duration>,
         pub min_message_latency: Option<Duration>,

@@ -12,6 +12,7 @@ pub fn scene(args: TokenStream, item: TokenStream) -> TokenStream {
     let func = parse_macro_input!(item as ItemFn);
     let name_ident = &func.sig.ident;
 
+    let start_time = quote_option(args.start_time.map(|arg| arg.0));
     let simulation_duration = quote_option(args.simulation_duration);
     let tick_duration = quote_option(args.tick_duration);
     let min_message_latency = quote_option(args.min_message_latency);
@@ -34,6 +35,7 @@ pub fn scene(args: TokenStream, item: TokenStream) -> TokenStream {
                 name: stringify!(#name_ident),
                 func: #name_ident,
                 config: SceneConfig {
+                    start_time: #start_time,
                     simulation_duration: #simulation_duration,
                     tick_duration: #tick_duration,
                     min_message_latency: #min_message_latency,
@@ -60,6 +62,7 @@ fn quote_option<T: quote::ToTokens>(opt: Option<T>) -> proc_macro2::TokenStream 
 #[derive(Debug, darling::FromMeta)]
 #[darling(derive_syn_parse)]
 struct SceneArgs {
+    start_time: Option<StartTimeArg>,
     simulation_duration: Option<DurationArg>,
     tick_duration: Option<DurationArg>,
     min_message_latency: Option<DurationArg>,
@@ -68,6 +71,19 @@ struct SceneArgs {
     repair_rate: Option<f64>,
     tcp_capacity: Option<usize>,
     udp_capacity: Option<usize>,
+}
+
+#[derive(Debug)]
+struct StartTimeArg(DurationArg);
+
+impl darling::FromMeta for StartTimeArg {
+    fn from_string(s: &str) -> darling::Result<Self> {
+        let start_time = humantime::parse_rfc3339(s).map_err(darling::Error::custom)?;
+        let since_unix_epoch = start_time
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_err(darling::Error::custom)?;
+        Ok(Self(DurationArg(since_unix_epoch.into())))
+    }
 }
 
 #[derive(Debug)]

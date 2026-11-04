@@ -16,6 +16,7 @@ fn bare(_sim: Sim) {
     assert_eq!(
         scene.config,
         SceneConfig {
+            start_time: None,
             simulation_duration: None,
             tick_duration: None,
             min_message_latency: None,
@@ -39,6 +40,7 @@ fn durations(_sim: Sim) {
     assert_eq!(
         scene.config,
         SceneConfig {
+            start_time: None,
             simulation_duration: Some(Duration::from_secs(60)),
             tick_duration: Some(Duration::from_millis(1)),
             min_message_latency: Some(Duration::from_millis(5)),
@@ -57,6 +59,7 @@ fn rates(_sim: Sim) {
     assert_eq!(
         scene.config,
         SceneConfig {
+            start_time: None,
             simulation_duration: None,
             tick_duration: None,
             min_message_latency: None,
@@ -75,6 +78,7 @@ fn capacities(_sim: Sim) {
     assert_eq!(
         scene.config,
         SceneConfig {
+            start_time: None,
             simulation_duration: None,
             tick_duration: None,
             min_message_latency: None,

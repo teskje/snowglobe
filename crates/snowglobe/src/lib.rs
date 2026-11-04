@@ -7,6 +7,7 @@ mod patch;
 mod sim;
 
 pub use crate::cli::{__private, main};
+pub use crate::context::rng_seed;
 pub use crate::error::{Error, Result};
 pub use crate::sim::Sim;
 

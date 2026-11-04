@@ -124,6 +124,10 @@ fn build(target: &target::Spec, release: bool) -> anyhow::Result<PathBuf> {
     use cargo_metadata::Message;
 
     let mut cmd = process::Command::new("cargo");
+    cmd.args([
+        "--config",
+        r#"target."cfg(all())".rustflags=["--cfg","simulation"]"#,
+    ]);
     cmd.args(["build", "--message-format", "json"]);
     if release {
         cmd.arg("--release");

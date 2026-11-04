@@ -19,7 +19,7 @@ snowglobe-proto.path = "../snowglobe-proto"
 rlsf = { version = "0.2", optional = true }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-turmoil = "0.7.2"
+turmoil = { version = "0.7.2", features = ["unstable-fs"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 mach2 = { version = "0.7", optional = true }

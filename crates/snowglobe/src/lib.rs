@@ -11,3 +11,4 @@ pub use crate::error::{Error, Result};
 pub use crate::sim::Sim;
 
 pub use snowglobe_macros::scene;
+pub use turmoil::{fs, lookup, net};

@@ -21,6 +21,7 @@ pub fn scene(args: TokenStream, item: TokenStream) -> TokenStream {
     let repair_rate = quote_option(args.repair_rate);
     let tcp_capacity = quote_option(args.tcp_capacity);
     let udp_capacity = quote_option(args.udp_capacity);
+    let fs_corruption_probability = quote_option(args.fs_corruption_probability);
 
     let expanded = quote! {
         #func
@@ -44,6 +45,7 @@ pub fn scene(args: TokenStream, item: TokenStream) -> TokenStream {
                     repair_rate: #repair_rate,
                     tcp_capacity: #tcp_capacity,
                     udp_capacity: #udp_capacity,
+                    fs_corruption_probability: #fs_corruption_probability,
                 },
             };
         };
@@ -71,6 +73,7 @@ struct SceneArgs {
     repair_rate: Option<f64>,
     tcp_capacity: Option<usize>,
     udp_capacity: Option<usize>,
+    fs_corruption_probability: Option<f64>,
 }
 
 #[derive(Debug)]

@@ -116,6 +116,10 @@ fn run_scene(scene: &Scene, rng_seed: u64) {
         ]
     );
 
+    if let Some(probability) = scene.config.fs_corruption_probability {
+        builder.fs().corruption_probability(probability);
+    }
+
     let sim = builder.build().into();
     (scene.func)(sim);
 }
@@ -161,5 +165,6 @@ pub mod __private {
         pub repair_rate: Option<f64>,
         pub tcp_capacity: Option<usize>,
         pub udp_capacity: Option<usize>,
+        pub fs_corruption_probability: Option<f64>,
     }
 }

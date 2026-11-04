@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use turmoil::ToIpAddr;
+use turmoil::{ToIpAddr, ToIpAddrs};
 
 use crate::{Result, context};
 
@@ -32,6 +32,30 @@ impl Sim {
         Fut: Future<Output = Result> + 'static,
     {
         self.0.client(addr, client)
+    }
+
+    pub fn crash(&mut self, addrs: impl ToIpAddrs) {
+        self.0.crash(addrs)
+    }
+
+    pub fn bounce(&mut self, addrs: impl ToIpAddrs) {
+        self.0.bounce(addrs)
+    }
+
+    pub fn hold(&self, a: impl ToIpAddrs, b: impl ToIpAddrs) {
+        self.0.hold(a, b)
+    }
+
+    pub fn release(&self, a: impl ToIpAddrs, b: impl ToIpAddrs) {
+        self.0.release(a, b)
+    }
+
+    pub fn partition_oneway(&self, from: impl ToIpAddrs, to: impl ToIpAddrs) {
+        self.0.partition_oneway(from, to)
+    }
+
+    pub fn repair_oneway(&self, from: impl ToIpAddrs, to: impl ToIpAddrs) {
+        self.0.repair_oneway(from, to)
     }
 
     pub fn step(&mut self) -> Result<bool> {

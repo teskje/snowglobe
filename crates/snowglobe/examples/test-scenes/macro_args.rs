@@ -25,6 +25,7 @@ fn bare(_sim: Sim) {
             repair_rate: None,
             tcp_capacity: None,
             udp_capacity: None,
+            fs_corruption_probability: None,
         }
     );
 }
@@ -49,11 +50,12 @@ fn durations(_sim: Sim) {
             repair_rate: None,
             tcp_capacity: None,
             udp_capacity: None,
+            fs_corruption_probability: None,
         }
     );
 }
 
-#[snowglobe::scene(fail_rate = 0.1, repair_rate = 0.5)]
+#[snowglobe::scene(fail_rate = 0.1, repair_rate = 0.5, fs_corruption_probability = 0.01)]
 fn rates(_sim: Sim) {
     let scene = get_scene("rates");
     assert_eq!(
@@ -68,6 +70,7 @@ fn rates(_sim: Sim) {
             repair_rate: Some(0.5),
             tcp_capacity: None,
             udp_capacity: None,
+            fs_corruption_probability: Some(0.01),
         }
     );
 }
@@ -87,6 +90,7 @@ fn capacities(_sim: Sim) {
             repair_rate: None,
             tcp_capacity: Some(123),
             udp_capacity: Some(456),
+            fs_corruption_probability: None,
         }
     );
 }
